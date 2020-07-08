@@ -2,6 +2,11 @@ Description: '(SO0021) - Video On Demand workflow with AWS Step Functions, Media
 
 Parameters:
 
+  DomainName:
+    Description: Input an ICP licensed domain. e.g. vod.example.com.cn
+    Type: String
+    AllowedPattern: ^$|(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
+
   AdminEmail:
     Description: Email address for SNS notifications.
     Type: String
@@ -44,12 +49,15 @@ Metadata:
     ParameterGroups:
         -
           Parameters:
+              - DomainName
               - AdminEmail
               - WorkflowTrigger
               - Glacier
               - FrameCapture
               - QVBR
     ParameterLabels:
+      DomainName:
+        default: Domain Name
       AdminEmail:
         default: Administrator email address
       Glacier:
@@ -101,14 +109,14 @@ Resources:
                 Action:
                   - iam:PassRole
                 Resource:
-                  - !Join ["", ["arn:aws:iam::", Ref: "AWS::AccountId", ":role/*"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":iam::", Ref: "AWS::AccountId", ":role/*"]]
               -
                 Effect: Allow
                 Action:
                   - states:CreateStateMachine
                   - states:DeleteStateMachine
                 Resource:
-                  - !Join ["", ["arn:aws:states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
               -
                 Effect: Allow
                 Action:
@@ -116,13 +124,13 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - !Join ["", ["arn:aws:logs:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":log-group:/aws/lambda/*"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":logs:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":log-group:/aws/lambda/*"]]
               -
                 Effect: Allow
                 Action:
                   - lambda:UpdateFunctionConfiguration
                 Resource:
-                  - !Join ["", ["arn:aws:lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":", "function:*" ]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":", "function:*" ]]
               -
                 Effect: Allow
                 Action:
@@ -141,7 +149,7 @@ Resources:
                   - mediaconvert:DescribeEndpoints
                   - mediaconvert:ListJobTemplates
                 Resource:
-                  - !Join ["", ["arn:aws:mediaconvert:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":mediaconvert:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -171,7 +179,7 @@ Resources:
                 Action:
                   - lambda:InvokeFunction
                 Resource:
-                  - !Join ["", ["arn:aws:lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":", "function:*" ]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":", "function:*" ]]
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -201,9 +209,9 @@ Resources:
                 Action:
                   - states:StartExecution
                 Resource:
-                  - !Join ["", ["arn:aws:states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-ingest"]]
-                  - !Join ["", ["arn:aws:states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-process"]]
-                  - !Join ["", ["arn:aws:states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-publish"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-ingest"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-process"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-publish"]]
               -
                 Effect: Allow
                 Action:
@@ -218,7 +226,7 @@ Resources:
                 Action:
                   - lambda:InvokeFunction
                 Resource:
-                  - !Join ["", ["arn:aws:lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId",":function:", Ref: "AWS::StackName","-error-handler"  ]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId",":function:", Ref: "AWS::StackName","-error-handler"  ]]
               -
                 Effect: Allow
                 Action:
@@ -233,7 +241,7 @@ Resources:
                   - dynamodb:UpdateItem
                   - dynamodb:Scan
                 Resource:
-                  - !Join ["", ["arn:aws:dynamodb:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":table/",Ref: "DynamoDBTable"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":dynamodb:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":table/",Ref: "DynamoDBTable"]]
               -
                 Effect: Allow
                 Action:
@@ -251,7 +259,7 @@ Resources:
                   - mediaconvert:ListPresets
                   - mediaconvert:UpdateJobTemplate
                 Resource:
-                  - !Join ["", ["arn:aws:mediaconvert:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":mediaconvert:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
               -
                 Effect: Allow
                 Action:
@@ -265,7 +273,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - !Join ["", ["arn:aws:logs:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":log-group:/aws/lambda/*"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":logs:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":log-group:/aws/lambda/*"]]
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -303,7 +311,7 @@ Resources:
                 Action:
                   - "execute-api:Invoke"
                 Resource:
-                  - !Join ["", ["arn:aws:execute-api:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
+                  - !Join ["", ["arn:", Ref: "AWS::Partition", ":execute-api:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -349,7 +357,7 @@ Resources:
             Action:
               - "s3:GetObject"
             Effect: "Allow"
-            Resource: !Join ["", ["arn:aws:s3:::", Ref: "Destination", "/*"]]
+            Resource: !Join ["", ["arn:", Ref: "AWS::Partition" ,":s3:::", Ref: "Destination", "/*"]]
             Principal:
               CanonicalUser: !GetAtt DestinationOriginAccessIdentity.S3CanonicalUserId
 
@@ -511,15 +519,17 @@ Resources:
     Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
+        Aliases:
+          - !Ref DomainName
         Origins:
-          - DomainName: !Sub "${Destination}.s3.${AWS::Region}.amazonaws.com"
+          - DomainName: !Sub "${Destination}.s3.${AWS::Region}.${AWS::URLSuffix}"
             Id: vodS3Origin
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${DestinationOriginAccessIdentity}"
         Enabled: true
         Logging:
           IncludeCookies: false
-          Bucket: !GetAtt Logs.DomainName
+          Bucket: !GetAtt Logs.RegionalDomainName
           Prefix: cloudfront-logs/
         DefaultCacheBehavior:
           AllowedMethods:
@@ -536,7 +546,7 @@ Resources:
               - Access-Control-Request-Method
               - Access-Control-Request-Headers
           ViewerProtocolPolicy: allow-all
-        PriceClass: PriceClass_100
+        PriceClass: PriceClass_All
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
 
@@ -596,9 +606,9 @@ Resources:
       Timeout: 120
       Environment:
         Variables:
-          IngestWorkflow: !Join ["", ["arn:aws:states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-ingest"]]
-          ProcessWorkflow: !Join ["", ["arn:aws:states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-process"]]
-          PublishWorkflow: !Join ["", ["arn:aws:states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-publish"]]
+          IngestWorkflow: !Join ["", ["arn:", Ref: "AWS::Partition", ":states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-ingest"]]
+          ProcessWorkflow: !Join ["", ["arn:", Ref: "AWS::Partition", ":states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-process"]]
+          PublishWorkflow: !Join ["", ["arn:", Ref: "AWS::Partition", ":states:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":stateMachine:", Ref: "AWS::StackName","-publish"]]
           ErrorHandler: !GetAtt ErrorHandler.Arn
 
 # Workflow Lambda Functions
@@ -915,6 +925,12 @@ Outputs:
     Value: !Ref Destination
     Export:
       Name: !Join [ ":", [ !Ref "AWS::StackName", Destination ] ]
+
+  DomainName:
+    Description: Domain Name
+    Value: !Ref DomainName
+    Export:
+      Name: !Join [ ":", [ !Ref "AWS::StackName", DomainName ] ]
 
   CloudFront:
     Description: CloudFront Domain Name

@@ -130,7 +130,14 @@ const cbrTemplates = [{
 
 // Get the Account regional MediaConvert endpoint for making API calls
 let GetEndpoints = async (config) => {
-    const mediaconvert = new AWS.MediaConvert();
+    let mediaconvert;
+    if (process.env.AWS_REGION.startsWith("cn-")) {
+        mediaconvert = new AWS.MediaConvert({
+            endpoint: `subscribe.mediaconvert.${process.env.AWS_REGION}.amazonaws.com.cn`,
+        })
+    } else {
+        mediaconvert = new AWS.MediaConvert();
+    }
     let responseData;
     try {
         let data = await mediaconvert.describeEndpoints().promise();
