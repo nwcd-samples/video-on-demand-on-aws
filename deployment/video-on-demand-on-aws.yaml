@@ -287,6 +287,8 @@ Resources:
         rules_to_suppress:
           - id: W11
             reason: "* is required for actions that do not support resource level permissions"
+          - id: W76
+            reason: "SPCM More than 25"
 
   MediaConvertRole:
     Type: AWS::IAM::Role
@@ -434,15 +436,15 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
       TableName: !Ref AWS::StackName
     Metadata:
       cfn_nag:
         rules_to_suppress:
           - id: W28
             reason: "Table name is set to the stack name"
+          - id: W74
+            reason: "No CMK"
 
   Source:
     DeletionPolicy: Retain

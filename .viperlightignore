@@ -1,5 +1,5 @@
 ^dist/
 CODE_OF_CONDUCT.md:4
 CONTRIBUTING.md:50
-deployment/video-on-demand-on-aws.yaml:584
+deployment/video-on-demand-on-aws.yaml:586
 source/custom-resource/lib/cfn/index.spec.js:32
